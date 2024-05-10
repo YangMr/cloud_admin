@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 import type { StateType } from "@/types/login";
 import { Local } from "@/utils/storage";
-import { login, userInfo } from "@/api/auth";
+import { login, logout, userInfo } from "@/api/auth";
 import type { MenuList, UserInfo } from "@/api/types/authType";
 
 // pinia 选项式api写法 组合式api写法
@@ -68,6 +68,30 @@ export const useAuthStore = defineStore(
       }
     };
 
+    // 退出登录
+    const userLogout = async () => {
+      try {
+        const res = await logout();
+
+        resetUserState();
+
+        // 强制刷新
+        window.location.reload();
+
+        return res;
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    // 重置用户状态
+    const resetUserState = () => {
+      token.value = "";
+      user.value = null;
+      menuList.value = [];
+      buttonList.value = [];
+    };
+
     return {
       token,
       setToken,
@@ -78,6 +102,7 @@ export const useAuthStore = defineStore(
       user,
       menuList,
       buttonList,
+      userLogout,
     };
   },
   {

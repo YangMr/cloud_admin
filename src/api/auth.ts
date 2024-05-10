@@ -21,3 +21,10 @@ export const login = (loginParams: LoginParamsType) => {
 export const userInfo = () => {
   return request<responseUserInfoType>("/system/menu/user", "GET");
 };
+
+/**
+ * 退出登录接口
+ */
+export const logout = () => {
+  return request("/auth/logout", "POST");
+};

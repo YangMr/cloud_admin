@@ -36,10 +36,10 @@ router.beforeEach(async (to, from, next) => {
     } else {
       if (!store.user?.username || store.menuList.length <= 0) {
         const res = await store.getUserInfo();
-        if (res?.data.userInfo.username) {
-          next();
+        if (res?.data?.userInfo!.username) {
+          return next();
         } else {
-          next("/login");
+          return next("/login");
         }
       } else {
         return next();

@@ -22,8 +22,14 @@ const isDark = useDark({
 });
 
 // 退出登录
-const logout = () => {
-  alert("退出登录");
+const logout = async () => {
+  try {
+    await store.userLogout();
+    // 退出
+    // router.push("/login");
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 // 点击下拉菜单项触发的事件
@@ -60,7 +66,7 @@ const logout = () => {
     </div>
     <!-- 下拉菜单 -->
     <el-dropdown>
-      <span class="el-dropdown-link">
+      <span class="el-dropdown-link" v-if="store.user">
         <el-avatar :size="30" :src="store.user?.imageUrl" />
 
         <span class="username">{{ store.user?.username }}</span>
