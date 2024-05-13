@@ -40,7 +40,6 @@ export type DatumChild = {
   type: string;
   updateTime: string;
 };
-
 export type ChildChild = {
   children: string[];
   code: string;
@@ -56,7 +55,6 @@ export type ChildChild = {
   type: string;
   updateTime: string;
 };
-
 export type PurpleMeta = {
   cache: boolean;
   hidden: boolean;
@@ -77,4 +75,69 @@ export type DatumMeta = {
   icon: string;
   linkTo: string;
   title: string;
+};
+
+/**
+ * 新增菜单的参数类型
+ */
+export type MenuParamsType = {
+  /**
+   * 组件路径
+   */
+  component: string;
+  /**
+   * 路由信息
+   */
+  meta: Meta;
+  /**
+   * 路由名称
+   */
+  name: string;
+  /**
+   * 上级菜单
+   */
+  parentId: string;
+  /**
+   * 路由地址
+   */
+  path: string;
+  /**
+   * 重定向
+   */
+  redirect: string;
+  /**
+   * 备注
+   */
+  remark: string;
+  /**
+   * 排序
+   */
+  sort: number;
+  /**
+   * 菜单类型
+   */
+  type: string;
+};
+
+/**
+ * 路由信息
+ */
+export type Meta = {
+  /**
+   * 是否缓存
+   */
+  cache: boolean;
+  /**
+   * 是否显示为菜单
+   */
+  hidden: boolean;
+  /**
+   * 菜单图标
+   */
+  icon: string;
+  /**
+   * 菜单名称
+   */
+  title: string;
+  [property: string]: any;
 };

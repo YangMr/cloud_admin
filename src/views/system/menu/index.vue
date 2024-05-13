@@ -1,7 +1,8 @@
 <script lang="ts" setup>
 import { ref } from "vue";
 import type { ResponseMenuListType } from "@/api/types/menuType";
-import { getMenuList } from "@/api/system/menu";
+import { delMenu, getMenuList } from "@/api/system/menu";
+import { ElNotification } from "element-plus";
 // 保存后台返回的菜单列表数据
 const menuList = ref<ResponseMenuListType[]>([]);
 
@@ -29,10 +30,45 @@ const filterMenuIcon = (icon: string) => {
     return icon.replace("ele-", "");
   }
 };
+
+// 删除菜单方法
+const handleDelete = async (row: ResponseMenuListType) => {
+  try {
+    await delMenu(row.id);
+
+    // 删除成功的提示信息
+    ElNotification({
+      title: "删除成功!",
+      type: "success",
+    });
+
+    // 刷新菜单列表
+    initMenuList();
+  } catch (error) {
+    console.log(error);
+  }
+};
 </script>
 
 <template>
   <div class="layout-padding">
+    <!-- 菜单查询 -->
+    <el-form :inline="true" :model="searchFormKey" class="demo-form-inline">
+      <el-form-item label="菜单名称:">
+        <el-input
+          v-model="searchFormKey.keyword"
+          placeholder="请输入菜单名称"
+          clearable
+        />
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" icon="search" @click="initMenuList"
+          >查询</el-button
+        >
+        <el-button type="success" icon="plus">新增菜单</el-button>
+      </el-form-item>
+    </el-form>
+
     <!-- 菜单列表 -->
     <el-table
       :data="menuList"
@@ -74,9 +110,25 @@ const filterMenuIcon = (icon: string) => {
           <el-button type="warning" icon="Edit" link size="small">
             修改
           </el-button>
-          <el-button type="danger" icon="delete" link size="small">
-            删除
-          </el-button>
+          <el-popconfirm
+            width="auto"
+            :title="`确定永久删除【${scope.row.meta.title}】吗?`"
+            confirm-button-text="确定"
+            cancel-button-text="取消"
+            @confirm="handleDelete(scope.row)"
+          >
+            <template #reference>
+              <el-button
+                @click.stop
+                type="danger"
+                icon="delete"
+                link
+                size="small"
+              >
+                删除
+              </el-button>
+            </template>
+          </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
