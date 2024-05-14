@@ -352,8 +352,16 @@ const emits = defineEmits(["refresh"]);
 // 提交弹窗数据方法
 const handleSubmit = () => {
   formDataRef.value?.validate((valid: boolean) => {
-    console.log(valid);
     if (valid) {
+      if (formData.value.type === "2") {
+        formData.value.path = "";
+        formData.value.component = "";
+        formData.value.redirect = "";
+        formData.value.name = "";
+        formData.value.meta.icon = "";
+        formData.value.meta.hidden = false;
+        formData.value.meta.cache = false;
+      }
       submitData();
     }
   });
@@ -395,12 +403,16 @@ const getSelectMenu = async () => {
 };
 
 // 开启抽屉方法
-const openDrawer = (type: string, title: string, data = {} as any) => {
+const openDrawer = (
+  type: string,
+  title: string,
+  data: { parentId: string }
+) => {
   getSelectMenu();
   visible.value = true;
   dialogType.value = type;
   dialogTitle.value = title;
-  // formData.value.parentId = data.parendId;
+  formData.value.parentId = data.parentId;
 };
 
 // 暴露子组件方法
