@@ -37,3 +37,55 @@ export type Record = {
   username: string;
   [property: string]: any;
 };
+
+// 定义新增用户参数类型
+export type UserParamsType = {
+  /**
+   * 账号是否过期
+   */
+  accountNonExpired: boolean;
+  /**
+   * 账号是否锁定
+   */
+  accountNonLocked: boolean;
+  /**
+   * 密码是否过期
+   */
+  credentialsNonExpired: boolean;
+  /**
+   * 邮箱
+   */
+  email: string;
+  /**
+   * 手机号
+   */
+  mobile: string;
+  /**
+   * 用户名
+   */
+  nickName: string;
+  /**
+   * 密码
+   */
+  password: string;
+  /**
+   * 备注
+   */
+  remark: string;
+  /**
+   * 分配的角色
+   */
+  roleIds: number[];
+  /**
+   * 账号
+   */
+  username: string;
+};
+
+export type EditUserParamsType =
+  | {
+      id: number;
+      createTime: string;
+      updateTime: string;
+    }
+  | UserParamsType;
