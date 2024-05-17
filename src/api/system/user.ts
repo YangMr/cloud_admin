@@ -4,6 +4,7 @@
 import request from "@/utils/request";
 import type {
   EditUserParamsType,
+  PasswordDataType,
   ResponseUserListType,
   UserListParamsType,
   UserParamsType,
@@ -40,6 +41,20 @@ export const addUser = (userParams: UserParamsType) => {
   return request(`/system/user`, "POST", userParams);
 };
 
+/**
+ * 编辑用户
+ * @param userParams
+ * @returns
+ */
 export const editUser = (userParams: EditUserParamsType) => {
   return request("/system/user", "PUT", userParams);
+};
+
+/**
+ * 重置密码
+ * @param data
+ * @returns
+ */
+export const resetPassword = (data: PasswordDataType) => {
+  return request("/system/user/password", "PUT", data);
 };

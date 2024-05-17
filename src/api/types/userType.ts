@@ -89,3 +89,19 @@ export type EditUserParamsType =
       updateTime: string;
     }
   | UserParamsType;
+
+// 定义重置密码参数的类型
+export type PasswordDataType = {
+  /**
+   * 新密码
+   */
+  newPassword: string;
+  /**
+   * 确认密码
+   */
+  repPassword: string;
+  /**
+   * 用户id
+   */
+  userId: number | string;
+};

@@ -4,9 +4,14 @@ import { ref } from "vue";
 import type { Record } from "@/api/types/userType";
 import { ElNotification } from "element-plus";
 import { defineAsyncComponent } from "vue";
+// import {} from "./components/pass-dialog.vue";
 
 const userDialog = defineAsyncComponent(
   () => import("./components/user-dialog.vue")
+);
+
+const passDialog = defineAsyncComponent(
+  () => import("./components/pass-dialog.vue")
 );
 
 const dialogRef = ref<InstanceType<typeof userDialog>>();
@@ -85,6 +90,11 @@ const handleDelete = async (id: number) => {
     console.log(error);
   }
 };
+
+const passDialogRef = ref<InstanceType<typeof passDialog>>();
+const resetPassword = (row: Record) => {
+  passDialogRef.value?.openDialog(`重置密码[${row.nickName}]`, row.id);
+};
 </script>
 
 <template>
@@ -144,7 +154,9 @@ const handleDelete = async (id: number) => {
       />
       <el-table-column align="center" label="操作" width="260px">
         <template #default="{ row }">
-          <el-button icon="key" link type="primary">密码重置</el-button>
+          <el-button icon="key" link type="primary" @click="resetPassword(row)"
+            >密码重置</el-button
+          >
           <el-button icon="edit" link type="warning" @click="handleEdit(row)"
             >修改</el-button
           >
@@ -181,6 +193,7 @@ const handleDelete = async (id: number) => {
     <user-dialog ref="dialogRef" @refresh="initUserList"></user-dialog>
 
     <!-- 修改密码弹窗 -->
+    <pass-dialog ref="passDialogRef"></pass-dialog>
   </div>
 </template>
 
