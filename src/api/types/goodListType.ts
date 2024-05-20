@@ -59,3 +59,24 @@ export type StatusParamsType = {
    */
   status: number;
 };
+
+export type AddGoodParamsType = {
+  address: string;
+  brand: string;
+  categoryId: number;
+  code: string;
+  cost: number;
+  discountPrice: number;
+  goodsDetail: string;
+  imageUrl: string;
+  name: string;
+  price: number;
+  quickCode: string;
+  remark: string;
+  score: number;
+  sort: number;
+  specsName: string;
+  status: number;
+  stockNum: number;
+  unitName: string;
+};

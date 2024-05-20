@@ -2,6 +2,10 @@ import { ref } from "vue";
 import type { Record } from "@/api/types/goodListType";
 import { changeGoodStatus, delGood, getGoodList } from "@/api/goods/goodList";
 import { ElNotification } from "element-plus";
+import { defineAsyncComponent } from "vue";
+const ListDialog = defineAsyncComponent(
+  () => import("../components/list-dialog.vue")
+);
 
 export const useGoodList = () => {
   const current = ref<number>(1);
@@ -77,6 +81,15 @@ export const useGoodList = () => {
     }
   };
 
+  const listDialogRef = ref<InstanceType<typeof ListDialog>>();
+  const handleAdd = () => {
+    listDialogRef.value?.openDrawer("add", "新增商品信息");
+  };
+
+  const handleEdit = (row: Record) => {
+    listDialogRef.value?.openDrawer("edit", "编辑商品信息", row);
+  };
+
   return {
     current,
     size,
@@ -89,5 +102,8 @@ export const useGoodList = () => {
     handleCurrentChange,
     handleDelete,
     handleSearch,
+    listDialogRef,
+    handleAdd,
+    handleEdit,
   };
 };

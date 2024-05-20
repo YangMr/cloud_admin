@@ -1,5 +1,6 @@
 import request from "@/utils/request";
 import type {
+  AddGoodParamsType,
   GoodListParamsType,
   ResponseGoodListType,
   StatusParamsType,
@@ -30,4 +31,24 @@ export const changeGoodStatus = (statusParams: StatusParamsType) => {
  */
 export const delGood = (id: number) => {
   return request(`goods/${id}`, "DELETE");
+};
+
+/**
+ * 根据商品编码查询商品接口
+ * @param code
+ * @returns
+ */
+export const findGood = (code: number) => {
+  return request("/goods/exist", "GET", {
+    code,
+  });
+};
+
+/**
+ * 新增商品接口
+ * @param goodParams
+ * @returns
+ */
+export const addGood = (goodParams: AddGoodParamsType) => {
+  return request("/goods", "POST");
 };

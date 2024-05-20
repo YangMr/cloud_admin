@@ -1,6 +1,11 @@
 <script lang="ts" setup name="List">
 import { useGoodList } from "./composable/useGoodList";
 
+import { defineAsyncComponent } from "vue";
+const ListDialog = defineAsyncComponent(
+  () => import("./components/list-dialog.vue")
+);
+
 const {
   current,
   size,
@@ -13,6 +18,9 @@ const {
   handleCurrentChange,
   handleDelete,
   handleSearch,
+  listDialogRef,
+  handleAdd,
+  handleEdit,
 } = useGoodList();
 
 initGoodList();
@@ -45,7 +53,9 @@ initGoodList();
         <el-button icon="search" type="primary" @click="handleSearch"
           >查询</el-button
         >
-        <el-button type="success" icon="plus">新增商品</el-button>
+        <el-button type="success" icon="plus" @click="handleAdd"
+          >新增商品</el-button
+        >
       </el-form-item>
     </el-form>
     <!-- 商品列表渲染 -->
@@ -139,7 +149,9 @@ initGoodList();
       </el-table-column>
       <el-table-column align="center" fixed="right" label="操作" width="200">
         <template #default="{ row }">
-          <el-button link icon="edit" type="warning">修改</el-button>
+          <el-button link icon="edit" type="warning" @click="handleEdit(row)"
+            >修改</el-button
+          >
           <el-popconfirm
             width="220"
             confirm-button-text="确定"
@@ -169,6 +181,7 @@ initGoodList();
     </el-row>
 
     <!-- 新增与编辑弹窗 -->
+    <list-dialog ref="listDialogRef"></list-dialog>
   </div>
 </template>
 
