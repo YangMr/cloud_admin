@@ -2,7 +2,35 @@
 import type { AddGoodParamsType } from "@/api/types/goodListType";
 import type { ResponseCategoryListType } from "@/api/types/goodCategoryType";
 import { getCategoryList } from "@/api/goods/goodCategory";
-import { ref } from "vue";
+import { ref, nextTick, shallowRef, onBeforeUnmount, reactive } from "vue";
+import {
+  ElNotification,
+  type FormInstance,
+  type FormRules,
+  type UploadRequestOptions,
+} from "element-plus";
+import _ from "lodash";
+import { upload } from "@/api/common";
+import "@wangeditor/editor/dist/css/style.css"; // 引入 css
+import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
+import { addGood, editGood, findGood } from "@/api/goods/goodList";
+
+// 编辑器实例，必须用 shallowRef
+const editorRef = shallowRef();
+
+// 初始化编辑器
+const handleCreated = (editor: any) => {
+  editorRef.value = editor; // 记录 editor 实例，重要！
+};
+
+// 组件销毁时，也及时销毁编辑器
+onBeforeUnmount(() => {
+  const editor = editorRef.value;
+  if (editor == null) return;
+  editor.destroy();
+});
+
+const dialogFormRef = ref<FormInstance>();
 
 // 控制弹窗显示与隐藏
 const visible = ref<boolean>(false);
@@ -15,7 +43,7 @@ const dialogForm = ref<AddGoodParamsType>({
   // 商品名称
   name: "",
   // 商品分类
-  categoryId: 0,
+  categoryId: "",
   // 商品编码
   code: "",
   // 规格名称
@@ -58,7 +86,9 @@ const openDrawer = (type?: string, title?: string, data = {} as any) => {
   console.log("Data=>", data);
 
   if (type === "edit") {
-    dialogForm.value = data;
+    nextTick(() => {
+      dialogForm.value = _.cloneDeep(data);
+    });
   }
 
   visible.value = true;
@@ -66,6 +96,7 @@ const openDrawer = (type?: string, title?: string, data = {} as any) => {
 
 // 关闭抽屉
 const handleClose = () => {
+  dialogFormRef.value?.resetFields();
   visible.value = false;
 };
 
@@ -84,6 +115,95 @@ const initGoodCategoryList = async () => {
 defineExpose({
   openDrawer,
 });
+
+// 图像上传
+const handleUploadImg = async (options: UploadRequestOptions) => {
+  try {
+    console.log("options", options);
+    // 1. 拉起选择文件的弹窗
+
+    // 2. 获取选择的文件
+    const file = options.file;
+
+    // 3. 判断上传文件的大小
+    // if (file.size > 1 * 1024 * 1024) {
+    //   alert("上传的文件大小不能超过1MB");
+    //   return;
+    // }
+
+    // 4. 实例化FormData对象
+    const formData = new FormData();
+    // 5. 将文件添加到FormData对象中
+    formData.append("file", file);
+    formData.append("data", JSON.stringify({ sourceType: "goods_img" }));
+
+    // 6.调用文件上传接口,实现上传
+    const res = await upload(formData);
+
+    // 7. 将返回的图片地址赋值给imageUrl
+    dialogForm.value.imageUrl = res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const handleCheckCode = async (rule: any, value: any, callback: any) => {
+  console.log("value,", value);
+  try {
+    if (dialogType.value === "add") {
+      const res = await findGood(value);
+      if (res.data) {
+        return callback(new Error("当前的商品已存在"));
+      } else {
+        return callback();
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const dialogFormRules = reactive<FormRules<AddGoodParamsType>>({
+  name: [{ required: true, message: "商品名称为必填项！", trigger: "blur" }],
+  categoryId: [
+    { required: true, message: "商品分类为必填项！", trigger: "change" },
+  ],
+
+  code: [
+    { required: true, message: " 商品编码为必填项！", trigger: "blur" },
+    { validator: handleCheckCode, trigger: "blur" },
+  ],
+  stockNum: [
+    { required: true, message: " 库存数量为必填项！", trigger: "blur" },
+  ],
+  price: [{ required: true, message: " 销售价格为必填项！", trigger: "blur" }],
+});
+
+const emits = defineEmits(["refresh"]);
+
+const handleSubmit = () => {
+  dialogFormRef.value?.validate(async (valid: boolean) => {
+    if (valid) {
+      try {
+        if (dialogType.value === "add") {
+          await addGood(dialogForm.value);
+        } else {
+          await editGood(dialogForm.value);
+        }
+        handleClose();
+
+        ElNotification({
+          title: "操作成功",
+          type: "success",
+        });
+
+        emits("refresh");
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  });
+};
 </script>
 <template>
   <el-drawer
@@ -94,7 +214,12 @@ defineExpose({
     :before-close="handleClose"
     destroy-on-close
   >
-    <el-form :model="dialogForm" label-width="95px">
+    <el-form
+      ref="dialogFormRef"
+      :rules="dialogFormRules"
+      :model="dialogForm"
+      label-width="95px"
+    >
       <el-row>
         <el-col :span="12">
           <el-form-item label="商品名称:" prop="name">
@@ -270,14 +395,86 @@ defineExpose({
           </el-form-item>
         </el-col>
         <el-col :span="24">
-          <el-form-item label="商品主图:" prop="remark"> </el-form-item>
+          <el-form-item label="商品主图:" prop="imageUrl">
+            <el-upload
+              class="avatar-uploader"
+              action=""
+              :show-file-list="false"
+              accept="image/png,image/jpeg,image/jpg"
+              :http-request="handleUploadImg"
+            >
+              <img
+                v-if="dialogForm.imageUrl"
+                :src="dialogForm.imageUrl"
+                class="avatar"
+              />
+              <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
+              <template #tip>
+                <div class="el-upload__tip">
+                  上传的图片大小不能超过 1MB，格式为 png/jpg/jpeg 的文件
+                </div>
+              </template>
+            </el-upload>
+          </el-form-item>
         </el-col>
         <el-col :span="24">
-          <el-form-item label="商品详情:" prop="remark"> </el-form-item>
+          <el-form-item label="商品详情:" prop="goodsDetail">
+            <div style="border: 1px solid #ccc">
+              <Toolbar
+                style="border-bottom: 1px solid #ccc"
+                :editor="editorRef"
+                :defaultConfig="{}"
+                mode="default"
+              />
+              <Editor
+                style="height: 500px; overflow-y: hidden"
+                v-model="dialogForm.goodsDetail"
+                :defaultConfig="{ placeholder: '请输入内容...' }"
+                mode="default"
+                @onCreated="handleCreated"
+              />
+            </div>
+          </el-form-item>
         </el-col>
       </el-row>
     </el-form>
+
+    <template #footer>
+      <el-row justify="center" style="margin-top: 10px">
+        <el-button @click="handleClose">取消</el-button>
+        <el-button type="primary" @click="handleSubmit">保存</el-button>
+      </el-row>
+    </template>
   </el-drawer>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.avatar-uploader .avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+}
+</style>
+
+<style>
+.avatar-uploader .el-upload {
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  text-align: center;
+}
+</style>
