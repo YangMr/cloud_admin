@@ -35,6 +35,9 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   (response: AxiosResponse) => {
+    // TODO 全局异常处理
+
+    // TODO token过期处理
     return response.data;
   },
   (error: AxiosError) => {
